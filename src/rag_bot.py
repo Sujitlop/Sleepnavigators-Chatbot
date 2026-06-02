@@ -1,175 +1,83 @@
-from pathlib import Path
-import re
-from src.safety import classify_safety
+import os
+from google import genai
+from google.genai import types
+from src.safety import evaluate_intent_and_safety
 
+client = genai.Client()
 
-KNOWLEDGE_BASE_DIR = Path("data/knowledge_base")
+def load_all_knowledge_base_files() -> str:
+    kb_dir = os.path.join("data", "knowledge_base")
+    combined_context = ""
+    if not os.path.exists(kb_dir):
+        return "Knowledge base directory missing."
+    for file_name in os.listdir(kb_dir):
+        if file_name.endswith(".txt"):
+            file_path = os.path.join(kb_dir, file_name)
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    combined_context += f"\n--- Source: {file_name} ---\n"
+                    combined_context += f.read() + "\n"
+            except Exception as e:
+                print(f"Warning: Could not read file {file_name}: {e}")
+    return combined_context
 
-STOPWORDS = {
-    "the", "is", "a", "an", "to", "of", "and", "or", "in", "on", "for",
-    "with", "where", "what", "when", "how", "do", "does", "i", "my",
-    "your", "me", "can", "should", "are", "be", "it", "at", "by",
-    "from", "this", "that", "there", "about", "please", "patient",
-    "patients", "sleep", "study", "appointment", "lab", "labs", "testing", "test", "support", "home"
-}
+def answer_question(question: str) -> str:
+    """
+    Evaluates safety filters first, then synthesizes a grounded answer from local files.
+    """
+    triage = evaluate_intent_and_safety(question)
+    category = triage.get("category")
+    
+    # 1. EXPLICIT DANGER REFUSALS
+    if triage.get("requires_refusal") or category in ["medical_advice", "crisis_emergency"]:
+        if category == "medical_advice":
+            return (
+                "I am a virtual administrative assistant and cannot provide medical advice, "
+                "interpret test results, or recommend treatments. For your safety, please contact your "
+                "sleep specialist directly at 800-892-9994 or send a message through your secure "
+                "patient portal. If you are experiencing a medical emergency, please call 911."
+            )
+        elif category == "crisis_emergency":
+            return (
+                "This situation may be urgent. If you are experiencing a medical emergency (such as chest pain) "
+                "or a mental health crisis, please immediately call 911 or visit the nearest "
+                "emergency room. You can also text or call 988 for the Suicide & Crisis Lifeline."
+            )
 
+    # 2. LOAD REAL KNOWLEDGE CONTEXT FOR ALL SAFE QUESTIONS
+    context = load_all_knowledge_base_files()
+
+    # 3. PROMPT GEMINI WITH STRICT GROUNDING INSTRUCTIONS
+    rag_instruction = (
+        "You are Odette, the virtual administrative assistant for SleepNavigator. "
+        "Your task is to answer patient logistical and prep questions using ONLY the provided context text.\n\n"
+        "Strict Grounding Rules:\n"
+        "1. Base your response strictly on facts explicitly written inside the context source text.\n"
+        "2. If the context does not explicitly contain the answer to the user's specific question "
+        "(or if they are asking completely random trivia like sports or programming), do not invent details. "
+        "Instead, reply exactly with: 'I could not find that specific information in the current SleepNavigator "
+        "knowledge base. Please contact SleepNavigator staff for help.'\n"
+        "3. Never guess, assume, or hallucinate schedules, directions, phone numbers, or doors."
+    )
+
+    prompt = f"Retrieved Context:\n{context}\n\nPatient Question: {question}"
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=rag_instruction,
+                temperature=0.1
+            )
+        )
+        return response.text
+    except Exception as e:
+        return f"Error communicating with assistant backend: {str(e)}"
 
 def get_bot_intro() -> str:
     return (
-        "Hi, I'm Odette, the SleepNavigator virtual assistant! I'm an AI chatbot "
-        "here to help you with clinic locations, sleep study prep, and general FAQs.\n\n"
-        "Please note: I cannot provide medical advice, diagnoses, or treatment "
-        "recommendations. Always consult with a qualified healthcare provider for "
-        "medical concerns.\n\n"
-        "If you are experiencing a medical emergency, please call 911 or visit the "
-        "nearest emergency room. How can I help you today?"
+        "Hi, I'm Odette, the SleepNavigator virtual assistant! I'm an AI chatbot here to "
+        "help you with clinic locations, sleep study prep, and general FAQs.\n\n"
+        "Please note: I cannot provide medical advice, diagnoses, or treatment recommendations."
     )
-
-
-def clean_words(text: str) -> set[str]:
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9\s]", " ", text)
-    words = text.split()
-    return {word for word in words if word not in STOPWORDS and len(word) > 2}
-
-
-def load_documents() -> list[str]:
-    documents = []
-
-    # These files are for safety logic/documentation, not normal RAG answers.
-    excluded_files = {
-        "safety_guardrails.txt",
-        "approved_disclaimer.txt",
-    }
-
-    for file_path in KNOWLEDGE_BASE_DIR.glob("*.txt"):
-        if file_path.name in excluded_files:
-            continue
-
-        text = file_path.read_text(encoding="utf-8")
-        documents.append(text)
-
-    return documents
-
-
-def split_into_chunks(documents: list[str]) -> list[str]:
-    chunks = []
-
-    for doc in documents:
-        lines = [line.strip() for line in doc.splitlines() if line.strip()]
-
-        current_heading = ""
-        current_text = []
-
-        for line in lines:
-            # Treat short non-sentence lines as headings.
-            # Example: "Food, Eating, and Caffeine Instructions"
-            if len(line.split()) <= 10 and not line.endswith("."):
-                if current_text:
-                    chunks.append(current_heading + "\n" + " ".join(current_text))
-                    current_text = []
-
-                current_heading = line
-            else:
-                current_text.append(line)
-
-        if current_text:
-            chunks.append(current_heading + "\n" + " ".join(current_text))
-
-    return chunks
-
-
-def score_chunk(question: str, chunk: str) -> int:
-    question_words = clean_words(question)
-    chunk_words = clean_words(chunk)
-
-    score = 0
-
-    # 1. Normal word overlap
-    overlap = question_words.intersection(chunk_words)
-    score += len(overlap)
-
-    # 2. Strong heading match
-    lines = chunk.splitlines()
-    if lines:
-        heading = lines[0]
-        heading_words = clean_words(heading)
-        heading_overlap = question_words.intersection(heading_words)
-        score += len(heading_overlap) * 12
-
-    # 3. Important question words matter more
-    weak_words = {
-        "clinic", "help", "information", "instructions", "general",
-        "location", "locations", "sleep", "study", "patient", "patients",
-        "appointment", "lab", "labs", "testing", "test", "support", "home"
-    }
-
-    important_question_words = question_words - weak_words
-    important_overlap = important_question_words.intersection(chunk_words)
-    score += len(important_overlap) * 6
-
-    # 4. Very strong boost when the main action word appears in the heading
-    # This is still general because it works for any heading, not only sleep prep.
-    if lines:
-        heading_lower = lines[0].lower()
-        for word in important_question_words:
-            if word in heading_lower:
-                score += 15
-
-    return score
-
-
-def retrieve_best_chunks(question: str, chunks: list[str], top_k: int = 1) -> list[str]:
-    scored = []
-
-    for chunk in chunks:
-        score = score_chunk(question, chunk)
-        scored.append((score, chunk))
-
-    scored.sort(reverse=True, key=lambda x: x[0])
-
-    best_chunks = []
-
-    for score, chunk in scored[:top_k]:
-        if score > 0:
-            best_chunks.append(chunk)
-
-    return best_chunks
-
-
-def remove_heading(chunk: str) -> str:
-    lines = chunk.splitlines()
-
-    if len(lines) > 1:
-        return " ".join(lines[1:]).strip()
-
-    return chunk.strip()
-
-
-def answer_question(question: str) -> str:
-    user_input = question.lower().strip()
-
-    if user_input in ["hi", "hello", "hey", "start"]:
-        return get_bot_intro()
-
-    safety = classify_safety(question)
-
-    if not safety["safe"]:
-        return safety["message"]
-
-    documents = load_documents()
-
-    if not documents:
-        return "No SleepNavigator knowledge base documents are loaded yet."
-
-    chunks = split_into_chunks(documents)
-    best_chunks = retrieve_best_chunks(question, chunks, top_k=1)
-
-    if not best_chunks:
-        return (
-            "I could not find that information in the current SleepNavigator knowledge base. "
-            "Please contact SleepNavigator staff for help."
-        )
-
-    clean_answers = [remove_heading(chunk) for chunk in best_chunks]
-    return "\n\n".join(clean_answers)
