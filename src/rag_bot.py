@@ -3,13 +3,21 @@ from google import genai
 from google.genai import types
 from src.safety import evaluate_intent_and_safety
 
+# Initialize the live Gemini client.
 client = genai.Client()
 
 def load_all_knowledge_base_files() -> str:
+    """
+    Scans the knowledge_base directory and combine all text files into a single context string for RAG retrieval.
+    Injects source tags so the model knows where boundaries exist between clinical rules.
+    """
     kb_dir = os.path.join("data", "knowledge_base")
     combined_context = ""
+
+    #catch missing directories cleanly before we try to read files
     if not os.path.exists(kb_dir):
         return "Knowledge base directory missing."
+    
     for file_name in os.listdir(kb_dir):
         if file_name.endswith(".txt"):
             file_path = os.path.join(kb_dir, file_name)
@@ -19,6 +27,7 @@ def load_all_knowledge_base_files() -> str:
                     combined_context += f.read() + "\n"
             except Exception as e:
                 print(f"Warning: Could not read file {file_name}: {e}")
+
     return combined_context
 
 def answer_question(question: str) -> str:
@@ -36,6 +45,7 @@ def answer_question(question: str) -> str:
                 "interpret test results, or recommend treatments. For your safety, please contact your "
                 "sleep specialist directly at 800-892-9994 or send a message through your secure "
                 "patient portal. If you are experiencing a medical emergency, please call 911."
+                "or go to the nearest emergency room immediately."
             )
         elif category == "crisis_emergency":
             return (
@@ -68,7 +78,7 @@ def answer_question(question: str) -> str:
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=rag_instruction,
-                temperature=0.1
+                temperature=0.1   # Low temperature ensures it sticks strictly to context details
             )
         )
         return response.text
@@ -76,8 +86,14 @@ def answer_question(question: str) -> str:
         return f"Error communicating with assistant backend: {str(e)}"
 
 def get_bot_intro() -> str:
+    """
+    Returns company-approved legal disclaimer to inject directly to inject directly into frintend loaders
+    """
     return (
-        "Hi, I'm Odette, the SleepNavigator virtual assistant! I'm an AI chatbot here to "
-        "help you with clinic locations, sleep study prep, and general FAQs.\n\n"
-        "Please note: I cannot provide medical advice, diagnoses, or treatment recommendations."
+        "Hi, I'm Odette, the SleepNavigator virtual assistant! I'm an AI chatbot here to help you "
+        "with clinic locations, sleep study prep, and general FAQs.\n\n"
+        "Please note: I cannot provide medical advice, diagnoses, or treatment recommendations. "
+        "Always consult with a qualified healthcare provider for medical concerns.\n\n"
+        "If you are experiencing a medical emergency, please call 911 or visit the nearest emergency room.\n\n"
+        "How can I help you today?"
     )

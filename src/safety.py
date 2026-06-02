@@ -3,6 +3,7 @@ import json
 from google import genai
 from google.genai import types
 
+#initialize the Gemini client. It pulls the GEMINI_API_key directly from environment variables. 
 client = genai.Client()
 
 def evaluate_intent_and_safety(user_question: str) -> dict:
@@ -10,6 +11,7 @@ def evaluate_intent_and_safety(user_question: str) -> dict:
     Triage classifier focused strictly on filtering out medical advice and crises.
     Passes all other queries (logistics, small talk, trivia) to the grounding layer.
     """
+    # Simple instructions for themodel to behave like a strict administrative router.
     triage_instruction = (
         "You are an automated triage classifier for a sleep medical center chatbot.\n"
         "Analyze the user query and determine if it requires an immediate medical/crisis refusal. "
@@ -22,15 +24,17 @@ def evaluate_intent_and_safety(user_question: str) -> dict:
     )
 
     try:
+        #Use gemini-2.5-flash for rapid classification to keep the bot feeling responsive. 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=user_question,
             config=types.GenerateContentConfig(
                 system_instruction=triage_instruction,
                 response_mime_type="application/json",
-                temperature=0.0 # Absolute consistency
+                temperature=0.0 # force deterministic output so classification stay consistant
             )
         )
+        # Parse the JSON response safely. If the model output is not valid JSON, this will raise an exception and we can default to safe behaviour.
         return json.loads(response.text)
     except Exception:
         # Secure fallback: if the API behaves weirdly, let it drop through to the text documents safely
