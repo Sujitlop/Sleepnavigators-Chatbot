@@ -44,7 +44,7 @@ def answer_question(question: str) -> str:
                 "I am a virtual administrative assistant and cannot provide medical advice, "
                 "interpret test results, or recommend treatments. For your safety, please contact your "
                 "sleep specialist directly at 800-892-9994 or send a message through your secure "
-                "patient portal. If you are experiencing a medical emergency, please call 911."
+                "patient portal. If you are experiencing a medical emergency, please call 911"
                 "or go to the nearest emergency room immediately."
             )
         elif category == "crisis_emergency":
