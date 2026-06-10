@@ -4,7 +4,9 @@ from google.genai import types
 from src.safety import evaluate_intent_and_safety
 
 # Initialize the live Gemini client.
-client = genai.Client()
+def get_client():
+    api_key = os.environ.get("GEMINI_API_KEY")
+    return genai.Client(api_key=api_key)
 
 def load_all_knowledge_base_files() -> str:
     """
@@ -31,6 +33,7 @@ def load_all_knowledge_base_files() -> str:
     return combined_context
 
 def answer_question(question: str) -> str:
+    client = get_client()
     """
     Evaluates safety filters first, then synthesizes a grounded answer from local files.
     """

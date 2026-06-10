@@ -4,9 +4,13 @@ from google import genai
 from google.genai import types
 
 #initialize the Gemini client. It pulls the GEMINI_API_key directly from environment variables. 
-client = genai.Client()
+def get_client():
+    api_key = os.environ.get("GEMINI_API_KEY")
+    return genai.Client(api_key=api_key)
 
 def evaluate_intent_and_safety(user_question: str) -> dict:
+    client = get_client()
+
     """
     Triage classifier focused strictly on filtering out medical advice and crises.
     Passes all other queries (logistics, small talk, trivia) to the grounding layer.
