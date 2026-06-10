@@ -1,6 +1,7 @@
 import os
 from google import genai
 from google.genai import types
+from google.genai.client import HttpOptions  
 from src.safety import evaluate_intent_and_safety
 
 # Initialize the live Gemini client.
@@ -9,7 +10,7 @@ def get_client():
     # This officially instructs the underlying HTTP layer to retry 3 times on 503s automatically
     return genai.Client(
         api_key=api_key,
-        http_options={"max_retries": 3}
+        http_options=HttpOptions(max_retries=3)
     )
 
 def load_all_knowledge_base_files() -> str:

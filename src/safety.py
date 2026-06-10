@@ -2,13 +2,14 @@ import os
 import json
 from google import genai
 from google.genai import types
+from google.genai.client import HttpOptions
 
 #initialize the Gemini client. It pulls the GEMINI_API_key directly from environment variables. 
 def get_client():
     api_key = os.environ.get("GEMINI_API_KEY")
     return genai.Client(
         api_key=api_key,
-        http_options={"max_retries": 3}
+        http_options=HttpOptions(max_retries=3)
         )
 
 def evaluate_intent_and_safety(user_question: str) -> dict:
