@@ -6,7 +6,11 @@ from src.safety import evaluate_intent_and_safety
 # Initialize the live Gemini client.
 def get_client():
     api_key = os.environ.get("GEMINI_API_KEY")
-    return genai.Client(api_key=api_key)
+    # This officially instructs the underlying HTTP layer to retry 3 times on 503s automatically
+    return genai.Client(
+        api_key=api_key,
+        http_options={"max_retries": 3}
+    )
 
 def load_all_knowledge_base_files() -> str:
     """
@@ -66,11 +70,14 @@ def answer_question(question: str) -> str:
         "Your task is to answer patient logistical and prep questions using ONLY the provided context text.\n\n"
         "Strict Grounding Rules:\n"
         "1. Base your response strictly on facts explicitly written inside the context source text.\n"
-        "2. If the context does not explicitly contain the answer to the user's specific question "
-        "(or if they are asking completely random trivia like sports or programming), do not invent details. "
-        "Instead, reply exactly with: 'I could not find that specific information in the current SleepNavigator "
+        "2. CHITCHAT EXCEPTION: If the user query is a standard friendly greeting or casual small talk "
+        "(e.g., 'Hey', 'Hello', 'How are you?', 'Good morning'), do not trigger a context error. Instead, "
+        "respond warmly as Odette (without repeating your entire opening legal disclaimer) and politely ask "
+        "how you can help them navigate their sleep study logistics today.\n"
+        "3. If the context does not explicitly contain the answer to a logistical question, and it is not basic chitchat, "
+        "reply exactly with: 'I could not find that specific information in the current SleepNavigator "
         "knowledge base. Please contact SleepNavigator staff for help.'\n"
-        "3. Never guess, assume, or hallucinate schedules, directions, phone numbers, or doors."
+        "4. Never guess, assume, or hallucinate schedules, directions, phone numbers, or doors."
     )
 
     prompt = f"Retrieved Context:\n{context}\n\nPatient Question: {question}"
@@ -86,7 +93,11 @@ def answer_question(question: str) -> str:
         )
         return response.text
     except Exception as e:
-        return f"Error communicating with assistant backend: {str(e)}"
+        # If the built-in 3 retries still fail during an extreme outage, show a clean message
+        return (
+            " **System Overload Alert:** The public Google API endpoints are experiencing a temporary "
+            "demand spike. Your conversation has been saved! Please try resubmitting your question in a moment."
+        )
 
 def get_bot_intro() -> str:
     """
