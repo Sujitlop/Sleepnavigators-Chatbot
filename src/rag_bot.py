@@ -39,20 +39,15 @@ def answer_question(question: str) -> str:
     
     # 1. EXPLICIT DANGER REFUSALS
     if triage.get("requires_refusal") or category in ["medical_advice", "crisis_emergency"]:
-        if category == "medical_advice":
-            return (
-                "I am a virtual administrative assistant and cannot provide medical advice, "
-                "interpret test results, or recommend treatments. For your safety, please contact your "
-                "sleep specialist directly at 800-892-9994 or send a message through your secure "
-                "patient portal. If you are experiencing a medical emergency, please call 911"
-                "or go to the nearest emergency room immediately."
-            )
-        elif category == "crisis_emergency":
-            return (
-                "This situation may be urgent. If you are experiencing a medical emergency (such as chest pain) "
-                "or a mental health crisis, please immediately call 911 or visit the nearest "
-                "emergency room. You can also text or call 988 for the Suicide & Crisis Lifeline."
-            )
+        return (
+            " **Safety Notice:** I am a virtual administrative assistant and cannot provide medical advice, "
+            "interpret test results, or recommend treatments.\n\n"
+            "If you are experiencing a medical emergency (such as severe chest pain or respiratory distress), "
+            "or a health crisis, please immediately call 911 or visit the nearest emergency room. You can "
+            "also text or call 988 for the Suicide & Crisis Lifeline.\n\n"
+            "For non-emergency clinical or administrative inquiries, please contact your sleep specialist "
+            "directly at 800-892-9994 or send a secure message through your patient portal."
+        )
 
     # 2. LOAD REAL KNOWLEDGE CONTEXT FOR ALL SAFE QUESTIONS
     context = load_all_knowledge_base_files()
