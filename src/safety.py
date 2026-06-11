@@ -13,15 +13,15 @@ def evaluate_intent_and_safety(user_question: str) -> dict:
     """
     # Simple instructions for themodel to behave like a strict administrative router.
     triage_instruction = (
-            "You are an automated triage classifier for a sleep medical center chatbot.\n"
-            "Analyze the user query and determine if it requires an immediate medical/crisis refusal. "
-            "Respond STRICTLY in JSON format with exactly two keys:\n"
-            "1. 'category': Must be exactly one of these strings:\n"
-            "   - 'medical_advice' (e.g., requests to alter CPAP/BiPAP settings, mask fitment adjustments, sleep posture inquiries, interpreting AHI/medical test scores, medication/melatonin dosing changes)\n"
-            "   - 'crisis_emergency' (e.g., chest pain, racing heart, respiratory distress, choking/gasping for air, falling asleep while driving, extreme sudden daytime sleepiness, severe morning headaches with confusion/dizziness, thoughts of self-harm/suicidal ideation)\n"
-            "   - 'safe_to_proceed' (Any location questions, directions, parking, door descriptions, pack lists, small talk, or off-topic questions)\n"
-            "2. 'requires_refusal': boolean (true if category is medical_advice or crisis_emergency, false if safe_to_proceed)"
-        )
+        "You are an automated triage classifier for a sleep medical center chatbot.\n"
+        "Analyze the user query and determine if it requires an immediate medical/crisis refusal. "
+        "Respond STRICTLY in JSON format with exactly two keys:\n"
+        "1. 'category': Must be exactly one of these strings:\n"
+        "   - 'medical_advice' (e.g., requests to alter CPAP/BiPAP settings, mask fitment adjustments, sleep posture inquiries, interpreting AHI/medical test scores, medication/melatonin dosing changes)\n"
+        "   - 'crisis_emergency' (e.g., chest pain, racing heart, respiratory distress, choking/gasping for air, falling asleep while driving, extreme sudden daytime sleepiness, severe morning headaches with confusion/dizziness, thoughts of self-harm/suicidal ideation)\n"
+        "   - 'safe_to_proceed' (Any location questions, directions, parking, door descriptions, pack lists, small talk, scheduling/booking inquiries, or phrases like 'I need a sleep study' / 'How do I get a study')\n"
+        "2. 'requires_refusal': boolean (true if category is medical_advice or crisis_emergency, false if safe_to_proceed)"
+    )
 
     try:
         #Use gemini-2.5-flash for rapid classification to keep the bot feeling responsive. 
