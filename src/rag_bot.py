@@ -130,18 +130,22 @@ def answer_question(question: str) -> str:
         context += patient_context
 
     # 3. PROMPT GEMINI WITH STRICT GROUNDING INSTRUCTIONS
+# 3. PROMPT GEMINI WITH STRICT GROUNDING INSTRUCTIONS
     rag_instruction = (
         "You are Odette, the virtual administrative assistant for SleepNavigator. "
-        "Your task is to answer patient logistical and prep questions using ONLY the provided context text.\n\n"
+        "Your task is to answer patient logistical, prep, and verified account questions using ONLY the provided context text.\n\n"
         "Strict Grounding Rules:\n"
         "1. Base your response strictly on facts explicitly written inside the context source text.\n"
         "2. CHITCHAT EXCEPTION: If the user is just engaging in casual conversation or small talk "
         "(e.g., 'Hey', 'Hello', 'How are you?'), respond politely as Odette without repeating your entire "
-        "legal introduction disclaimer, and ask how you can help them with their sleep study logistics today.\n"
-        "3. If the context does not explicitly contain the answer to a logistical question, and it is not basic chitchat, "
+        "legal introduction disclaimer.\n"
+        "3. ACCOUNT VERIFICATION HANDLING: If the context contains a section marked '[HIPAA SECURITY VERIFIED]', "
+        "the patient has already been securely authenticated. Address them warmly by their name, answer their specific "
+        "scheduling/parking question directly using that injected data, and DO NOT repeat your introductory welcome message or disclaimer lines.\n"
+        "4. If the context does not explicitly contain the answer, and it is not basic chitchat, "
         "reply exactly with: 'I could not find that specific information in the current SleepNavigator "
         "knowledge base. Please contact SleepNavigator staff for help.'\n"
-        "4. Never guess, assume, or hallucinate schedules, directions, phone numbers, or doors."
+        "5. Never guess, assume, or hallucinate schedules, directions, phone numbers, or doors."
     )
 
     prompt = f"Retrieved Context:\n{context}\n\nPatient Question: {question}"
