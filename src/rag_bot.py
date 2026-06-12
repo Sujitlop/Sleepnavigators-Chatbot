@@ -1,10 +1,59 @@
 import os
+import re 
 from google import genai
 from google.genai import types
 from src.safety import evaluate_intent_and_safety
 
 # Initialize the live Gemini client.
 client = genai.Client()
+
+
+MOCK_PATIENT_DB = {
+"corbin ramsey": {
+        "dob": "05/07/1994",
+        "location": "Heart Hospital of Austin",
+        "date": "June 18, 2026",
+        "time": "8:30 PM",
+        "instructions": "Enter through the Emergency Room entrance and check in at the front desk."
+    }
+}
+
+def secure_patient_lookup(user_input: str) -> str:
+    """
+    Simulates a secure database lookup gate. 
+    Returns appointment details if Name and DOB match, otherwise handles verification failures.
+    """
+    cleaned_input = user_input.lower()
+
+    # check if the known patient name is mentioned in the input
+    matched_name = None
+    for name in MOCK_PATIENT_DB.keys():
+        if name in cleaned_input:
+            matched_name = name
+            break
+
+    # if no matching patient name is found in the text, pass to the standard RAG pipeline
+    if not matched_name:
+        return ""
+    
+    # Extract expected DOB for the matched patient
+    expected_dob = MOCK_PATIENT_DB[matched_name]["dob"]
+
+    # verify the date of birth  (checks with or without the standard slashes)
+    if expected_dob in cleaned_input or expected_dob.replace("/", "") in cleaned_input:
+        patient_data = MOCK_PATIENT_DB[matched_name]
+        return (
+            f"\n\n--- Source: Secure SleepNav Database (Patient Profile: {matched_name.title()}) ---\n"
+            f"The patient's name is confirmed as {matched_name.title()}.\n"
+            f"Their appointment location is the {patient_data['location']}.\n"
+            f"The test date is explicitly scheduled for {patient_data['date']} at {patient_data['time']}.\n"
+            f"Special directions for arrival: {patient_data['instructions']}\n"
+        )
+    
+    #name matched but DOB was missing or incorrect
+    return "REFUSE_VERIFICATION"
+
+# ============== Rag Retrieval Functions ==============
 
 def load_all_knowledge_base_files() -> str:
     """
@@ -48,12 +97,25 @@ def answer_question(question: str) -> str:
             "For non-emergency clinical or administrative inquiries, please contact your sleep specialist "
             "directly at 800-892-9994 or send a secure message through your patient portal."
         )
+    
+    # run the secure verification CHECK fro Personal Schedules
+    patient_context = secure_patient_lookup(question)
+
+    if patient_context == "REFUSE_VERIFICATION":
+        return(
+            "**Identity Verification Required:** I see you are asking about specific appointment details. "
+            "To comply with HIPAA security requirements, please provide your full name and Date of Birth "
+            "formatted as (MM/DD/YYYY) so I can securely verify your patient file."
+        )
 
     # 2. LOAD REAL KNOWLEDGE CONTEXT FOR ALL SAFE QUESTIONS
     context = load_all_knowledge_base_files()
 
+    # if identity was verified, append the private database snippet right into the model's context window
+    if patient_context:
+        context += patient_context
+
     # 3. PROMPT GEMINI WITH STRICT GROUNDING INSTRUCTIONS
-# 3. PROMPT GEMINI WITH STRICT GROUNDING INSTRUCTIONS
     rag_instruction = (
         "You are Odette, the virtual administrative assistant for SleepNavigator. "
         "Your task is to answer patient logistical and prep questions using ONLY the provided context text.\n\n"
