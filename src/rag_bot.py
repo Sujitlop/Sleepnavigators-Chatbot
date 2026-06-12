@@ -15,7 +15,21 @@ MOCK_PATIENT_DB = {
         "date": "June 18, 2026",
         "time": "8:30 PM",
         "instructions": "Enter through the Emergency Room entrance and check in at the front desk."
-    }
+    },
+    "lea desmarteau": {
+        "dob": "11/14/1978",
+        "location": "Wellnecessities",
+        "date": "July 2, 2026",
+        "time": "9:00 PM",
+        "instructions": "Please arrive 15 minutes early to complete your overnight sleep study intake forms. Use the main canopy entrance."
+    },
+    "robert fournier": {
+        "dob": "03/22/1982",
+        "location": "Wellnecessities",
+        "date": "June 29, 2026",
+        "time": "10:00 PM",
+        "instructions": "Parking is validated. Take the East Elevators to the 4th floor and follow signs for the Sleep Disorders Center."
+    },
 }
 
 def secure_patient_lookup(user_input: str) -> str:
