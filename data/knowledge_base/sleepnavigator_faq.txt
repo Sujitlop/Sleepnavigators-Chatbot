@@ -1,59 +1,76 @@
 What SleepNavigator Is
 
-SleepNavigator is a workflow automation and patient navigation platform built specifically for managing sleep medicine patients. It streamlines the sleep study pipeline from referral intake to study completion, interpretation, DME coordination, and compliance follow-up.
+SleepNavigator is a workflow automation and patient navigation platform built specifically for managing sleep 
+medicine patients. It streamlines the sleep study pipeline from referral intake to study completion, interpretation,
+DME coordination, and compliance follow-up.
 
 Who SleepNavigator Is Designed For
 
-SleepNavigator is designed for independent sleep labs, hospital-based sleep centers, referring providers, sleep medicine physicians, DME providers, and administrative teams managing sleep study workflows.
+SleepNavigator is designed for independent sleep labs, hospital-based sleep centers, referring providers, sleep 
+medicine physicians, DME providers, and administrative teams managing sleep study workflows.
 
 Problems SleepNavigator Solves
 
-SleepNavigator helps reduce duplicate data entry, delayed order processing, manual referral validation, report turnaround delays, DME follow-up gaps, and compliance tracking challenges.
+SleepNavigator helps reduce duplicate data entry, delayed order processing, manual referral validation, report 
+turnaround delays, DME follow-up gaps, and compliance tracking challenges.
 
 Does SleepNavigator Replace an EMR
 
-No. SleepNavigator works alongside the EMR. It is not intended to replace the primary EMR. It enhances sleep-specific workflows that most EMRs do not handle efficiently.
+No. SleepNavigator works alongside the EMR. It is not intended to replace the primary EMR. It enhances sleep-
+specific workflows that most EMRs do not handle efficiently.
 
 Can SleepNavigator Integrate With Current Systems
 
-Yes. SleepNavigator supports integration discussions with major EMRs and sleep scoring platforms. Depending on the system, it can import patient demographics and orders, export finalized reports, sync study statuses, and reduce duplicate documentation.
+Yes. SleepNavigator supports integration discussions with major EMRs and sleep scoring platforms. Depending on the 
+system, it can import patient demographics and orders, export finalized reports, sync study statuses, and reduce 
+duplicate documentation.
 
 How AI Order Validation Works
 
-SleepNavigator uses AI-powered validation to review uploaded referral orders, identify missing study types, diagnosis codes, patient demographics, and incomplete documentation, and reduce intake errors.
+SleepNavigator uses AI-powered validation to review uploaded referral orders, identify missing study types, 
+diagnosis codes, patient demographics, and incomplete documentation, and reduce intake errors.
 
 SleepNavigator HIPAA Compliance
 
-SleepNavigator is designed with HIPAA compliance in mind, including secure data storage, role-based access controls, encrypted communication, and audit logging.
+SleepNavigator is designed with HIPAA compliance in mind, including secure data storage, role-based access controls, 
+encrypted communication, and audit logging.
 
 In-Lab and Home Sleep Testing Support
 
-SleepNavigator supports in-lab PSG studies, split-night studies, titration studies, Home Sleep Testing, device tracking, and returns.
+SleepNavigator supports in-lab PSG studies, split-night studies, titration studies, Home Sleep Testing, device 
+tracking, and returns.
 
 How SleepNavigator Reduces Turnaround Time
 
-SleepNavigator helps reduce turnaround time by automating order validation, patient communication, study scheduling, status tracking, and report routing.
+SleepNavigator helps reduce turnaround time by automating order validation, patient communication, study scheduling,
+ status tracking, and report routing.
 
 DME Coordination Support
 
-SleepNavigator can track PAP setup, DME coordination, compliance follow-up, and patient communication. This helps reduce lost follow-ups and improve continuity of care.
+SleepNavigator can track PAP setup, DME coordination, compliance follow-up, and patient communication. This helps 
+reduce lost follow-ups and improve continuity of care.
 
 SleepNavigator Implementation Timeline
 
-Implementation timelines vary based on lab size, workflow complexity, and integration requirements. Typical onboarding is around 10 days.
+Implementation timelines vary based on lab size, workflow complexity, and integration requirements. Typical 
+onboarding is around 10 days.
 
 SleepNavigator Support
 
-SleepNavigator provides live onboarding sessions, workflow customization support, ongoing technical assistance, and direct contact with the team.
+SleepNavigator provides live onboarding sessions, workflow customization support, ongoing technical assistance, and 
+direct contact with the team.
 
 SleepNavigator Customization
 
-SleepNavigator can tailor order validation rules, provider groups, facility configurations, reporting views, and user roles.
+SleepNavigator can tailor order validation rules, provider groups, facility configurations, reporting views, and 
+user roles.
 
 SleepNavigator Pricing
 
-Pricing depends on lab volume, number of users, integration complexity, and feature needs. SleepNavigator offers scalable pricing models for smaller independent labs and multi-location systems.
+Pricing depends on lab volume, number of users, integration complexity, and feature needs. SleepNavigator offers 
+scalable pricing models for smaller independent labs and multi-location systems.
 
 How to Get Started With SleepNavigator
 
-Users can schedule a live demo, request a workflow evaluation, or discuss integration options. Contact SleepNavigator at info@sleepnavigator.com or schedule a demo at www.sleepnavigator.com.
+Users can schedule a live demo, request a workflow evaluation, or discuss integration options. Contact SleepNavigator
+ at info@sleepnavigator.com or schedule a demo at www.sleepnavigator.com.
