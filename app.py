@@ -10,7 +10,7 @@ import streamlit as st
 from src.rag_bot import answer_question, get_bot_intro
 
 # 3. Configure the browser tab title and alignment
-st.set_page_config(page_title="SleepNavigator Chatbot", page_icon="🌙", layout="wide")
+st.set_page_config(page_title="SleepNavigator AI Suite", page_icon="🌙", layout="wide")
 
 # 4. Initialize chat history in Streamlit's browser session memory
 if "messages" not in st.session_state:
@@ -71,9 +71,9 @@ def update_analytics(question: str, response: str) -> None:
         analytics["recent"] = analytics["recent"][-8:]
 
 
-def render_patient_chat() -> None:
-    st.title("SleepNavigator Assistant")
-    st.caption("Proof of Concept Prototype — Odette Virtual Assistant")
+def render_part_a() -> None:
+    st.title("Part A: After-Hours Concierge Bot")
+    st.caption("A RAG-powered assistant for sleep-study logistics, clinic information, and prep guidance.")
 
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
@@ -94,44 +94,55 @@ def render_patient_chat() -> None:
         st.rerun()
 
 
-def render_staff_analytics() -> None:
-    st.title("Internal Staff Analytics View")
-    st.caption("Operational summary for the SleepNavigator assistant")
+def render_part_b() -> None:
+    st.title("Part B: Next-Gen AI Reporting Concepts")
+    st.caption("A proof of concept for conversational BI, narrative summaries, and anomaly detection.")
 
-    analytics = st.session_state.analytics
-    col1, col2, col3, col4 = st.columns(4)
+    st.markdown(
+        "This internal reporting view is designed to move beyond static data grids by combining natural-language requests, generated insight summaries, and proactive anomaly alerts."
+    )
+
+    st.subheader("Core concepts")
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Questions handled", analytics["questions"])
+        st.markdown("### Conversational BI")
+        st.write("Staff can ask questions like: 'Show me the top 3 clinics by patient volume this month.'")
     with col2:
-        st.metric("Resolved", analytics["resolved"])
+        st.markdown("### Narrative Summaries")
+        st.write("The system can turn report data into a short executive summary that explains what changed and why it matters.")
     with col3:
-        st.metric("Refused", analytics["refused"])
-    with col4:
-        st.metric("Emergency escalations", analytics["emergency"])
+        st.markdown("### Anomaly Detection")
+        st.write("Historical patterns can be scanned to flag unusual patient volume, missing authorizations, or clinic-level outliers.")
 
-    st.subheader("Topic breakdown")
-    if analytics["topics"]:
-        topic_data = dict(analytics["topics"].most_common())
-        st.bar_chart(topic_data)
-    else:
-        st.info("No interaction data yet.")
+    st.subheader("Example staff prompt")
+    prompt = st.text_area(
+        "Try a sample request",
+        value="Show me the top 3 clinics by patient volume this month.",
+        height=90,
+    )
 
-    st.subheader("Recent interactions")
-    if analytics["recent"]:
-        for item in analytics["recent"]:
-            st.write(f"- {item['question']} — {item['topic']} ({item['outcome']})")
-    else:
-        st.info("No recent interactions recorded.")
+    if st.button("Generate concept preview"):
+        st.success("Concept preview generated")
+        st.write(f"Detected intent: {prompt}")
+        st.bar_chart({"Heart Hospital of Austin": 42, "WellNecessities": 31, "Methodist Main": 27})
+        st.write("Narrative summary: Patient volume is strongest at Heart Hospital of Austin, while WellNecessities shows a moderate decline in this period.")
+        st.write("Anomaly alert: One clinic shows a sudden drop in completed authorizations and should be reviewed.")
+
+    st.subheader("Execution plan")
+    st.write("- Week 1: Build the knowledge base and RAG bot foundation")
+    st.write("- Week 2: Connect the bot to a simple chat or SMS front end")
+    st.write("- Weeks 3-5: Generate a reporting PoC using sanitized sample data")
+    st.write("- Week 6: Finalize documentation and handoff materials")
 
 
 view_mode = st.sidebar.radio(
-    "View",
-    ["Patient Chat", "Internal Staff Analytics"],
+    "Project view",
+    ["Part A: After-Hours Concierge Bot", "Part B: Next-Gen AI Reporting Concepts"],
     index=0,
-    help="Switch between the patient-facing chatbot and the internal staff dashboard.",
+    help="Switch between the patient-facing concierge bot and the internal reporting concepts demo.",
 )
 
-if view_mode == "Internal Staff Analytics":
-    render_staff_analytics()
+if view_mode == "Part B: Next-Gen AI Reporting Concepts":
+    render_part_b()
 else:
-    render_patient_chat()
+    render_part_a()
