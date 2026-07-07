@@ -14,6 +14,7 @@ load_dotenv()
 import streamlit as st
 from src.rag_bot import answer_question, get_bot_intro
 from src.reporting import generate_operations_report
+from src.database_pipeline import pipeline_verify_and_fetch_appointment, pipeline_fetch_weekly_metrics
 
 # 4. Configure the browser tab title and layout (Wide format for clear analytics grids)
 st.set_page_config(page_title="SleepNavigator Portal", page_icon="🌙", layout="wide")
@@ -62,7 +63,8 @@ if app_mode == "💬 Patient Concierge":
                 st.write(msg["content"])
         
         # 2. RENDER THE INPUT CONTAINER AT THE ABSOLUTE BOTTOM OF THE COLUMN
-        if user_input := st.chat_input("Ask me about clinic locations, parking, or sleep study prep..."):
+        # 2. RENDER THE INPUT CONTAINER AT THE ABSOLUTE BOTTOM OF THE COLUMN
+        if user_input := st.chat_input("Ask me about clinic locations, parking, or sleep study prep...", key="patient_chat_input"):
             
             # Step A: Append user query to history
             st.session_state.messages.append({"role": "user", "content": user_input})
