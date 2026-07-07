@@ -14,7 +14,7 @@ load_dotenv()
 import streamlit as st
 from src.rag_bot import answer_question, get_bot_intro
 from src.reporting import generate_operations_report
-from src.database_pipeline import pipeline_fetch_weekly_metrics
+from src.database_pipeline import pipeline_fetch_weekly_metrics, pipeline_verify_and_fetch_appointment 
 
 # 4. Configure the browser tab title and layout (Wide format for clear analytics grids)
 st.set_page_config(page_title="SleepNavigator Portal", page_icon="🌙", layout="wide")
