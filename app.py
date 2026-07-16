@@ -62,18 +62,18 @@ if app_mode == "💬 Patient Concierge":
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
         
-        # 2. RENDER THE INPUT CONTAINER AT THE ABSOLUTE BOTTOM OF THE COLUMN
-        if user_input := st.chat_input("Ask me about clinic locations, parking, or sleep study prep..."):
+    # 2. PULL THE INPUT CONTAINER OUTSIDE OF ALL COLUMNS AT THE MAIN ROOT LEVEL
+    if user_input := st.chat_input("Ask me about clinic locations, parking, or sleep study prep..."):
             
-            # Step A: Append user query to history
-            st.session_state.messages.append({"role": "user", "content": user_input})
+        # Step A: Append user query to history
+        st.session_state.messages.append({"role": "user", "content": user_input})
             
-            # Step B: Run pipeline immediately to prevent the input bar from jumping up
-            bot_response = answer_question(user_input)
-            st.session_state.messages.append({"role": "assistant", "content": bot_response})
+        # Step B: Run pipeline immediately to prevent the input bar from jumping up
+        bot_response = answer_question(user_input)
+        st.session_state.messages.append({"role": "assistant", "content": bot_response})
             
-            # Step C: Reload the interface so everything renders in perfect chronological order
-            st.rerun()
+        # Step C: Reload the interface so everything renders in perfect chronological order
+        st.rerun()
 
 
 # =========================================================
